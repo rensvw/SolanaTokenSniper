@@ -12,18 +12,16 @@ export class TelegramClientService {
     );
     private client: TelegramClient | undefined;
     private channelNames: Map<string, string> = new Map();
-    private dexAnalyseManager: DexAnalyseManagerService;
-
-    constructor() {
-        this.dexAnalyseManager = new DexAnalyseManagerService();
-    }
+    private readonly CryptoPumpClubChannelId = '1625691880';
+    private readonly CryptoBotTestChannelId = '1629064884';
+    constructor(private readonly dexAnalyseManager: DexAnalyseManagerService) {}
 
     async initialize(): Promise<void> {
-        this.createClient().then((client) => {
-            this.client = client;
-            this.client.addEventHandler(this.sendMessage.bind(this));
-            this.getSubscribedChannels(this.client);
-        });
+        const client = await this.createClient();
+        this.client = client;
+        await this.getSubscribedChannels(this.client);
+        this.client.addEventHandler(this.sendMessage.bind(this));
+        this.logger.log('Telegram client initialized and listening for messages');
     }
 
     private async getSubscribedChannels(client: TelegramClient) {
@@ -31,9 +29,9 @@ export class TelegramClientService {
         const channels = dialogs.filter(dialog => dialog.isChannel);
 
         channels.forEach(channel => {
-            const channelId = channel.id.toString().replace('-100', '');
-            this.channelNames.set(channelId, channel.title);
-            console.log(`Channel Name: ${channel.title}, Channel ID: ${channelId}`);
+            const channelId = channel.id?.toString().replace('-100', '') || '';
+            this.channelNames.set(channelId, channel.title || '');
+            // console.log(`Channel Name: ${channel.title}, Channel ID: ${channelId}`);
         });
     }
 
@@ -60,17 +58,19 @@ export class TelegramClientService {
         if (!event.message?.message) {
             return;
         }
+           
 
         const { message, peerId: { channelId } } = event.message;
-        const channelName = this.channelNames.get(channelId.toString());
-
+        const channelName = this.channelNames.get(channelId?.toString() || '');
+        if (channelId?.toString() === this.CryptoPumpClubChannelId || channelId?.toString() === this.CryptoBotTestChannelId) {
         this.logger.log(`Send analyse message to telegram: ${message} from channelId ${channelId} with channelName ${channelName}`);
 
         try {
-            await this.dexAnalyseManager.analyseTelegramMessage(message, channelId.toString(), channelName || 'Unknown Channel');
+            await this.dexAnalyseManager.analyseTelegramMessage(message, channelId?.toString() || '', channelName || 'Unknown Channel');
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
             this.logger.error(`Error in sendMessage: ${errorMessage}`);
         }
+    }
     }
 } 

@@ -57,10 +57,10 @@ async function initializeTelegramHandler(): Promise<void> {
   // Load environment variables from the .env file
   const env = validateEnv();
 
-  const telegramService = new TelegramClientService();
+  // Create and initialize the DexAnalyseManager first
   const dexAnalyseManager = new DexAnalyseManagerService();
-
-  // Initialize the DexAnalyseManager with a callback for processing transactions
+  
+  // Set up the callback before creating the telegram service
   dexAnalyseManager.onTokenReceived = async (tokenAddress: string) => {
     try {
       // Verify if we have reached the max concurrent transactions
@@ -88,8 +88,11 @@ async function initializeTelegramHandler(): Promise<void> {
     }
   };
 
-  await telegramService.initialize();
   await dexAnalyseManager.initialize();
+
+  // Create telegram service and pass the dexAnalyseManager to it
+  const telegramService = new TelegramClientService(dexAnalyseManager);
+  await telegramService.initialize();
 }
 
 // Start Telegram Handler

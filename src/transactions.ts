@@ -131,7 +131,7 @@ export async function fetchTransactionDetails(signature: string): Promise<MintsD
   return null;
 }
 
-export async function createSwapTransaction(solMint: string, tokenMint: string): Promise<string | null> {
+export async function createSwapTransaction(solMint: string | null, tokenMint: string): Promise<string | null> {
   const quoteUrl = process.env.JUP_HTTPS_QUOTE_URI || "";
   const swapUrl = process.env.JUP_HTTPS_SWAP_URI || "";
   const rpcUrl = process.env.HELIUS_HTTPS_URI || "";
