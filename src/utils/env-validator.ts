@@ -7,6 +7,7 @@ export interface EnvConfig {
   HELIUS_HTTPS_URI: string;
   HELIUS_WSS_URI: string;
   HELIUS_HTTPS_URI_TX: string;
+  HELIUS_API_KEY: string;
   JUP_HTTPS_QUOTE_URI: string;
   JUP_HTTPS_SWAP_URI: string;
   JUP_HTTPS_PRICE_URI: string;
@@ -19,6 +20,7 @@ export function validateEnv(): EnvConfig {
     "HELIUS_HTTPS_URI",
     "HELIUS_WSS_URI",
     "HELIUS_HTTPS_URI_TX",
+    "HELIUS_API_KEY",
     "JUP_HTTPS_QUOTE_URI",
     "JUP_HTTPS_SWAP_URI",
     "JUP_HTTPS_PRICE_URI",
@@ -74,6 +76,7 @@ export function validateEnv(): EnvConfig {
     HELIUS_HTTPS_URI: process.env.HELIUS_HTTPS_URI!,
     HELIUS_WSS_URI: process.env.HELIUS_WSS_URI!,
     HELIUS_HTTPS_URI_TX: process.env.HELIUS_HTTPS_URI_TX!,
+    HELIUS_API_KEY: process.env.HELIUS_API_KEY!,
     JUP_HTTPS_QUOTE_URI: process.env.JUP_HTTPS_QUOTE_URI!,
     JUP_HTTPS_SWAP_URI: process.env.JUP_HTTPS_SWAP_URI!,
     JUP_HTTPS_PRICE_URI: process.env.JUP_HTTPS_PRICE_URI!,

@@ -1,12 +1,19 @@
 import { Logger } from '../utils/logger';
+import { TokenMonitorService } from './token-monitor.service';
 
-export class DexAnalyseManagerService {
-    private readonly logger = new Logger(DexAnalyseManagerService.name);
+export class AnalyseManagerService {
+    private readonly logger = new Logger(AnalyseManagerService.name);
     private readonly solanaAddressRegex = /^[1-9A-HJ-NP-Za-km-z]{44}$/;
     public onTokenReceived: ((tokenAddress: string) => Promise<void>) | undefined;
 
     private readonly CryptoPumpClubChannelId = '1625691880';
     private readonly CryptoBotTestChannelId = '1629064884';
+
+    private tokenMonitor: TokenMonitorService | null = null;
+
+    setTokenMonitor(monitor: TokenMonitorService): void {
+        this.tokenMonitor = monitor;
+    }
 
     async analyseTelegramMessage(message: string, channelId: string, channelName: string): Promise<void> {
         try {
@@ -14,13 +21,18 @@ export class DexAnalyseManagerService {
                 this.logger.log(`Analysing DEX telegram message: ${message} from channelId: ${channelId} and channelName: ${channelName}`);
                 
                 // Extract token address from message
-                const tokenAddress = this.extractSolanaAddress(message);
+                const tokenAddress = this.extractTokenAddress(message);
                 if (!tokenAddress) {
-                    this.logger.warn('No token address found in message');
+                    this.logger.info('No token address found in message');
                     return;
                 }
 
-                this.logger.log(`Token address found: ${tokenAddress}`);
+                this.logger.info(`Extracted token address: ${tokenAddress} from ${channelName}`);
+                
+                // Notify token monitor of the correct token
+                if (this.tokenMonitor) {
+                    this.tokenMonitor.setCorrectToken(tokenAddress);
+                }
 
                 // Call the callback function if it exists
                 if (this.onTokenReceived) {
@@ -42,16 +54,10 @@ export class DexAnalyseManagerService {
         }
     }
 
-    private extractSolanaAddress(message: string): string | null {
-        const lines = message.split('\n');
-      
-        for (const line of lines) {
-            const trimmedLine = line.trim();
-            if (this.solanaAddressRegex.test(trimmedLine)) {
-                return trimmedLine;
-            }
-        }
-      
-        return null;
+    private extractTokenAddress(message: string): string | null {
+        // Look for Solana address pattern (base58 string)
+        const addressPattern = /[1-9A-HJ-NP-Za-km-z]{32,44}/;
+        const match = message.match(addressPattern);
+        return match ? match[0] : null;
     }
 } 
