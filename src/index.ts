@@ -275,13 +275,16 @@ async function fetchRecentTokens(): Promise<void> {
         logger.info('Fetching Raydium pool creations from the last 4 hours...');
 
         const response = await axios.post(
-            `${env.HELIUS_HTTPS_URI}/v0/transactions`,
+            env.HELIUS_HTTPS_URI,
             {
-                startTime: fourHoursAgo,
-                endTime: currentTime,
-                sourceType: "PROGRAM",
-                source: config.liquidity_pool.radiyum_program_id,
-                options: {
+                jsonrpc: "2.0",
+                id: "my-id",
+                method: "searchTransactions",
+                params: {
+                    startTime: fourHoursAgo,
+                    endTime: currentTime,
+                    account: config.liquidity_pool.radiyum_program_id,
+                    commitment: "finalized",
                     limit: 100
                 }
             },
@@ -292,18 +295,19 @@ async function fetchRecentTokens(): Promise<void> {
             }
         );
 
-        if (!response.data || !Array.isArray(response.data.transactions)) {
+        if (!response.data?.result?.items) {
             logger.error('Invalid response from Helius API');
             return;
         }
 
-        logger.info(`Found ${response.data.transactions.length} transactions to analyze`);
+        const transactions = response.data.result.items;
+        logger.info(`Found ${transactions.length} transactions to analyze`);
 
         // Process each transaction
-        for (const tx of response.data.transactions) {
+        for (const tx of transactions) {
             try {
                 // Check if this is a pool creation transaction
-                const logs = tx.logs;
+                const logs = tx.meta?.logMessages;
                 if (!Array.isArray(logs)) continue;
 
                 const containsCreate = logs.some((log: string) => 
@@ -313,10 +317,10 @@ async function fetchRecentTokens(): Promise<void> {
 
                 if (!containsCreate) continue;
 
-                logger.info(`Found historical pool creation with signature: ${tx.signature}`);
+                logger.info(`Found historical pool creation with signature: ${tx.transaction.signatures[0]}`);
 
                 // Fetch transaction details to get the token mint
-                const txDetails = await fetchTransactionDetails(tx.signature);
+                const txDetails = await fetchTransactionDetails(tx.transaction.signatures[0]);
                 if (!txDetails) {
                     logger.error("Failed to fetch transaction details");
                     continue;
@@ -335,6 +339,9 @@ async function fetchRecentTokens(): Promise<void> {
         }
     } catch (error) {
         logger.error('Error fetching recent tokens:', error);
+        if (axios.isAxiosError(error)) {
+            logger.error('Response:', JSON.stringify(error.response?.data, null, 2));
+        }
     }
 }
 
