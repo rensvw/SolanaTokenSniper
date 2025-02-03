@@ -1,6 +1,70 @@
 export interface MintsDataReponse {
-  tokenMint?: string;
-  solMint?: string;
+  mint: string;
+  description: string;
+  type: string;
+  source: string;
+  fee: number;
+  feePayer: string;
+  signature: string;
+  slot: number;
+  timestamp: number;
+  tokenTransfers: {
+    fromTokenAccount: string;
+    toTokenAccount: string;
+    fromUserAccount: string;
+    toUserAccount: string;
+    tokenAmount: number | string;
+    mint: string;
+    tokenStandard: string;
+  }[];
+  nativeTransfers: {
+    fromUserAccount: string;
+    toUserAccount: string;
+    amount: number;
+  }[];
+  accountData: {
+    account: string;
+    nativeBalanceChange: number;
+    tokenBalanceChanges: {
+      userAccount: string;
+      tokenAccount: string;
+      rawTokenAmount: {
+        tokenAmount: string;
+        decimals: number;
+      };
+      mint: string;
+    }[];
+  }[];
+  transactionError: string | null;
+  instructions: {
+    accounts: string[];
+    data: string;
+    programId: string;
+    innerInstructions: {
+      accounts: string[];
+      data: string;
+      programId: string;
+    }[];
+  }[];
+  events: {
+    source: string;
+    type: string;
+    amount: number;
+    fee: number;
+    feePayer: string;
+    signature: string;
+    slot: number;
+    timestamp: number;
+    tokenTransfers: {
+      fromTokenAccount: string;
+      toTokenAccount: string;
+      fromUserAccount: string;
+      toUserAccount: string;
+      tokenAmount: number;
+      mint: string;
+      tokenStandard: string;
+    }[];
+  }[];
 }
 
 export interface QuoteResponse {

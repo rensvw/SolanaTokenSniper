@@ -205,9 +205,24 @@ async function websocketHandler(): Promise<void> {
       const containsCreate = logs.some((log: string) => typeof log === "string" && log.includes("Program log: initialize2: InitializeInstruction2"));
       if (!containsCreate || typeof signature !== "string") return;
 
-      // If we have a token monitor instance, let it handle the new token
-      if (tokenMonitorInstance) {
-        await tokenMonitorInstance.handleNewTokenFromWebsocket(parsedData.params.result.value);
+      logger.info(`New pool creation detected with signature: ${signature}`);
+
+      // Fetch transaction details to get the token mint
+      try {
+        const txDetails = await fetchTransactionDetails(signature);
+        if (!txDetails) {
+          logger.error("Failed to fetch transaction details");
+          return;
+        }
+
+        logger.info(`Found new token mint: ${txDetails.mint}`);
+
+        // If we have a token monitor instance, let it handle the new token
+        if (tokenMonitorInstance) {
+          await tokenMonitorInstance.handleNewTokenFromWebsocket(txDetails);
+        }
+      } catch (error) {
+        logger.error("Error fetching transaction details:", error);
       }
     } catch (error) {
       logger.error("💥 Error processing message:", {
@@ -279,7 +294,31 @@ async function main() {
         
         logger.info('Token Sniper Bot started successfully');
         logger.info('Monitoring for new tokens and waiting for signals...');
-        
+
+        // Perform rug checks on specified addresses
+        const addressesToCheck = [
+            'BBc9zfiSMgqmmTqtFGE1xHzb1XcPzYSLQNLYTVoMpump',
+            '713RhkKwaZi2DwdEhCpmgGLfKuYCtrm7qFEzgsCspump',
+            'DLviyvDVYKbSrrwddrYbrPZCFaW4ZUgtjzMZZnuUpump'
+        ];
+
+        logger.info('Starting rug checks for specified addresses...');
+        for (const address of addressesToCheck) {
+            try {
+                logger.info(`Checking address: ${address}`);
+                const isRugCheckPassed = await getRugCheckConfirmed(address);
+              if (!isRugCheckPassed) {
+                  console.log("🚫 Rug Check not passed! Transaction aborted.");
+                  console.log("🟢 Resuming looking for new tokens...\n");
+                  
+              } else {
+                logger.info(`Rug check passed for address: ${address}`);
+              }
+            } catch (error) {
+                logger.error(`Error checking address ${address}:`, error);
+            }
+        }
+
     } catch (error) {
         logger.error('Error starting bot:', error);
         process.exit(1);

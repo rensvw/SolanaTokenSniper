@@ -109,8 +109,21 @@ export async function fetchTransactionDetails(signature: string): Promise<MintsD
       console.log(`New Token Account: ${newTokenAccount}`);
 
       const displayData: MintsDataReponse = {
-        tokenMint: newTokenAccount,
-        solMint: solTokenAccount,
+        mint: newTokenAccount,
+        description: `New token pool creation detected with SOL pair`,
+        type: 'POOL_CREATE',
+        source: 'raydium',
+        fee: 0,
+        feePayer: '',
+        signature: '',
+        slot: 0,
+        timestamp: Date.now(),
+        tokenTransfers: [],
+        nativeTransfers: [],
+        accountData: [],
+        transactionError: null,
+        instructions: [],
+        events: []
       };
 
       return displayData;

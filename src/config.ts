@@ -41,20 +41,20 @@ export const config = {
     allow_rugged: false,
     // Critical
     allow_mutable: false,
-    block_returning_token_names: true,
-    block_returning_token_creators: true,
+    block_returning_token_names: false, // this was true
+    block_returning_token_creators: false,//this used to be true
     block_symbols: ["XXX"],
     block_names: ["XXX"],
     allow_insider_topholders: false, // Allow inseder accounts to be part of the topholders
-    max_alowed_pct_topholders: 1, // Max allowed percentage an individual topholder might hold
+    max_alowed_pct_topholders: 95, // Max allowed percentage an individual topholder might hold, this was 1
     exclude_lp_from_topholders: false, // If true, Liquidity Pools will not be seen as top holders
     // Warning
-    min_total_markets: 999,
-    min_total_lp_providers: 999,
-    min_total_market_Liquidity: 1000000,
+    min_total_markets: 1,
+    min_total_lp_providers: 1,
+    min_total_market_Liquidity: 1,
     // Misc
     ignore_pump_fun: true,
-    max_score: 1, // Set to 0 to ignore
+    max_score: 0, // Set to 0 to ignore
     legacy_not_allowed: [
       "Low Liquidity",
       "Single holder ownership",
@@ -62,7 +62,7 @@ export const config = {
       "Freeze Authority still enabled",
       "Large Amount of LP Unlocked",
       "Copycat token",
-      "Low amount of LP Providers",
+      // "Low amount of LP Providers",
     ],
   },
 };

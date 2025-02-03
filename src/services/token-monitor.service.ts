@@ -40,11 +40,11 @@ export class TokenMonitorService {
 
     private checkTimeWindow(): void {
         const now = DateTime.now().setZone('GMT');
-        const targetHour = 5; // 5 GMT
+        const targetHour = 4; // 5 GMT
         
         // Check if we're within the 2-second window
-        const startTime = now.set({ hour: targetHour, minute: 0, second: 0, millisecond: 0 });
-        const endTime = startTime.plus({ seconds: 2 });
+        const startTime = now.set({ hour: targetHour, minute: 59, second: 50, millisecond: 0 });
+        const endTime = startTime.plus({ hours: 10 });
         
         const wasWithinWindow = this.isWithinTimeWindow;
         this.isWithinTimeWindow = now >= startTime && now <= endTime;
@@ -118,32 +118,21 @@ export class TokenMonitorService {
     }
 
     private async handleNewToken(tokenData: any): Promise<void> {
+        
         const tokenAddress = tokenData.mint;
+        console.log(`Handling new token from websocket with address: ${tokenAddress}`);
         if (!tokenAddress) return;
 
         // Check if we're already tracking this token
         if (this.activeTokens.has(tokenAddress)) return;
-
-        // Check if token was created in last 30 minutes
-        const creationTime = await this.getTokenCreationTime(tokenAddress);
-        if (!creationTime) return;
-
-        const thirtyMinutesAgo = Date.now() - (30 * 60 * 1000);
-        if (creationTime < thirtyMinutesAgo) return;
-
-        // Check if developer has sold their tokens
-        const hasDevSold = await this.checkDevSold(tokenAddress);
-        if (!hasDevSold) {
-            this.logger.info(`Token ${tokenAddress} skipped: Developer hasn't sold yet`);
+       
+        const isRugCheckPassed = await getRugCheckConfirmed(tokenAddress);
+        if (!isRugCheckPassed) {
+            console.log("🚫 Rug Check not passed! Transaction aborted.");
+            console.log("🟢 Resuming looking for new tokens...\n");
             return;
         }
 
-        // Run rugcheck
-        const rugcheck = await getRugCheckConfirmed(tokenAddress);
-        if (!this.isTokenSafe(rugcheck)) {
-            this.logger.info(`Token ${tokenAddress} skipped: Failed rugcheck`);
-            return;
-        }
 
         // Get initial price
         try {
