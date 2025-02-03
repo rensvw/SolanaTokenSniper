@@ -131,6 +131,8 @@ export class TokenMonitorService {
             console.log("🚫 Rug Check not passed! Transaction aborted.");
             console.log("🟢 Resuming looking for new tokens...\n");
             return;
+        } else {
+            this.logger.info(`✅✅✅ Rug check passed for address: ${tokenAddress}`);
         }
 
 

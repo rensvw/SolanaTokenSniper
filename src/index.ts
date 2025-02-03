@@ -7,6 +7,7 @@ import { TokenMonitorService } from "./services/token-monitor.service";
 import { Logger } from './utils/logger';
 import WebSocket from "ws"; // Node.js websocket library
 import { WebSocketRequest } from "./types"; // Typescript Types for type safety
+import axios from "axios";
 
 // Regional Variables
 let activeTransactions = 0;
@@ -264,6 +265,90 @@ async function websocketHandler(): Promise<void> {
   });
 }
 
+// Add this new function after the websocketHandler function
+async function fetchRecentTokens(): Promise<void> {
+    try {
+        const env = validateEnv();
+        const currentTime = Math.floor(Date.now() / 1000);
+        const fourHoursAgo = currentTime - (4 * 60 * 60); // 4 hours in seconds
+
+        logger.info('Fetching Raydium pool creations from the last 4 hours...');
+
+        const response = await axios.post(
+            `${env.HELIUS_HTTPS_URI}/v0/transactions`,
+            {
+                startTime: fourHoursAgo,
+                endTime: currentTime,
+                sourceType: "PROGRAM",
+                source: config.liquidity_pool.radiyum_program_id,
+                options: {
+                    limit: 100
+                }
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        if (!response.data || !Array.isArray(response.data.transactions)) {
+            logger.error('Invalid response from Helius API');
+            return;
+        }
+
+        logger.info(`Found ${response.data.transactions.length} transactions to analyze`);
+
+        // Process each transaction
+        for (const tx of response.data.transactions) {
+            try {
+                // Check if this is a pool creation transaction
+                const logs = tx.logs;
+                if (!Array.isArray(logs)) continue;
+
+                const containsCreate = logs.some((log: string) => 
+                    typeof log === "string" && 
+                    log.includes("Program log: initialize2: InitializeInstruction2")
+                );
+
+                if (!containsCreate) continue;
+
+                logger.info(`Found historical pool creation with signature: ${tx.signature}`);
+
+                // Fetch transaction details to get the token mint
+                const txDetails = await fetchTransactionDetails(tx.signature);
+                if (!txDetails) {
+                    logger.error("Failed to fetch transaction details");
+                    continue;
+                }
+
+                logger.info(`Found new token mint: ${txDetails.mint}`);
+
+                // If we have a token monitor instance, let it handle the new token
+                if (tokenMonitorInstance) {
+                    await tokenMonitorInstance.handleNewTokenFromWebsocket(txDetails);
+                }
+            } catch (error) {
+                logger.error('Error processing transaction:', error);
+                continue;
+            }
+        }
+    } catch (error) {
+        logger.error('Error fetching recent tokens:', error);
+    }
+}
+
+// Add this function to periodically fetch tokens
+async function startTokenFetching(): Promise<void> {
+    // Fetch immediately on startup
+    await fetchRecentTokens();
+    
+    // Then fetch every 15 minutes
+    setInterval(async () => {
+        await fetchRecentTokens();
+    }, 15 * 60 * 1000); // 15 minutes in milliseconds
+}
+
 async function main() {
     try {
         // Validate environment variables
@@ -285,6 +370,9 @@ async function main() {
         
         // Start websocket handler
         await websocketHandler();
+
+        // Start fetching recent tokens
+        await startTokenFetching();
         
         // Keep the process running
         process.on('SIGINT', () => {
@@ -299,7 +387,9 @@ async function main() {
         const addressesToCheck = [
             'BBc9zfiSMgqmmTqtFGE1xHzb1XcPzYSLQNLYTVoMpump',
             '713RhkKwaZi2DwdEhCpmgGLfKuYCtrm7qFEzgsCspump',
-            'DLviyvDVYKbSrrwddrYbrPZCFaW4ZUgtjzMZZnuUpump'
+            'DLviyvDVYKbSrrwddrYbrPZCFaW4ZUgtjzMZZnuUpump',
+            'GPpjfYESvvK2hJag2C4EwGYsbb7GWVgD9azHckP1pump',
+            '3uAXWENsKTTZJ64uPrbVRsdftiLGdtbPpkfqW3M9pump'
         ];
 
         logger.info('Starting rug checks for specified addresses...');
@@ -312,7 +402,7 @@ async function main() {
                   console.log("🟢 Resuming looking for new tokens...\n");
                   
               } else {
-                logger.info(`Rug check passed for address: ${address}`);
+                logger.info(`✅✅✅ Rug check passed for address: ${address}`);
               }
             } catch (error) {
                 logger.error(`Error checking address ${address}:`, error);

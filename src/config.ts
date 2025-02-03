@@ -56,13 +56,11 @@ export const config = {
     ignore_pump_fun: true,
     max_score: 0, // Set to 0 to ignore
     legacy_not_allowed: [
-      "Low Liquidity",
       "Single holder ownership",
       "High holder concentration",
       "Freeze Authority still enabled",
       "Large Amount of LP Unlocked",
       "Copycat token",
-      // "Low amount of LP Providers",
     ],
   },
 };
