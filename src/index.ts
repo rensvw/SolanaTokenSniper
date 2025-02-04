@@ -138,7 +138,7 @@ async function websocketHandler(): Promise<void> {
   const env = validateEnv();
 
   // Create a WebSocket connection with correct URL format
-  const wsUrl = `wss://mainnet.helius-rpc.com/v0/ws?api-key=${env.HELIUS_API_KEY}`;
+  const wsUrl = `wss://mainnet.helius-rpc.com/ws?api-key=${env.HELIUS_API_KEY}`;
   let ws: WebSocket | null = new WebSocket(wsUrl);
   if (!init) console.clear();
 
@@ -265,95 +265,15 @@ async function websocketHandler(): Promise<void> {
   });
 }
 
-// Add this new function after the websocketHandler function
-async function fetchRecentTokens(): Promise<void> {
-    try {
-        const env = validateEnv();
-        const currentTime = Math.floor(Date.now() / 1000);
-        const fourHoursAgo = currentTime - (4 * 60 * 60); // 4 hours in seconds
-
-        logger.info('Fetching Raydium pool creations from the last 4 hours...');
-
-        const response = await axios.post(
-            env.HELIUS_HTTPS_URI,
-            {
-                jsonrpc: "2.0",
-                id: "my-id",
-                method: "searchTransactions",
-                params: {
-                    startTime: fourHoursAgo,
-                    endTime: currentTime,
-                    account: config.liquidity_pool.radiyum_program_id,
-                    commitment: "finalized",
-                    limit: 100
-                }
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
-
-        if (!response.data?.result?.items) {
-            logger.error('Invalid response from Helius API');
-            return;
-        }
-
-        const transactions = response.data.result.items;
-        logger.info(`Found ${transactions.length} transactions to analyze`);
-
-        // Process each transaction
-        for (const tx of transactions) {
-            try {
-                // Check if this is a pool creation transaction
-                const logs = tx.meta?.logMessages;
-                if (!Array.isArray(logs)) continue;
-
-                const containsCreate = logs.some((log: string) => 
-                    typeof log === "string" && 
-                    log.includes("Program log: initialize2: InitializeInstruction2")
-                );
-
-                if (!containsCreate) continue;
-
-                logger.info(`Found historical pool creation with signature: ${tx.transaction.signatures[0]}`);
-
-                // Fetch transaction details to get the token mint
-                const txDetails = await fetchTransactionDetails(tx.transaction.signatures[0]);
-                if (!txDetails) {
-                    logger.error("Failed to fetch transaction details");
-                    continue;
-                }
-
-                logger.info(`Found new token mint: ${txDetails.mint}`);
-
-                // If we have a token monitor instance, let it handle the new token
-                if (tokenMonitorInstance) {
-                    await tokenMonitorInstance.handleNewTokenFromWebsocket(txDetails);
-                }
-            } catch (error) {
-                logger.error('Error processing transaction:', error);
-                continue;
-            }
-        }
-    } catch (error) {
-        logger.error('Error fetching recent tokens:', error);
-        if (axios.isAxiosError(error)) {
-            logger.error('Response:', JSON.stringify(error.response?.data, null, 2));
-        }
-    }
+// Helper: get UNIX timestamp for hours ago
+function getHoursAgo(hours: number): number {
+    const now = Math.floor(Date.now() / 1000); // current time in seconds
+    return now - (hours * 60 * 60); // subtract hours in seconds
 }
 
-// Add this function to periodically fetch tokens
-async function startTokenFetching(): Promise<void> {
-    // Fetch immediately on startup
-    await fetchRecentTokens();
-    
-    // Then fetch every 15 minutes
-    setInterval(async () => {
-        await fetchRecentTokens();
-    }, 15 * 60 * 1000); // 15 minutes in milliseconds
+// Add this helper function for rate limiting
+async function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function main() {
@@ -363,6 +283,8 @@ async function main() {
         
         // Initialize services
         tokenMonitorInstance = new TokenMonitorService();
+        await tokenMonitorInstance.initialize(); // Initialize database
+        
         const dexAnalyseManager = new AnalyseManagerService();
         
         // Wire services together
@@ -373,13 +295,10 @@ async function main() {
         await telegramClient.initialize();
         
         // Start monitoring for new tokens
-        tokenMonitorInstance.startMonitoring();
+        await tokenMonitorInstance.startMonitoring();
         
         // Start websocket handler
         await websocketHandler();
-
-        // Start fetching recent tokens
-        await startTokenFetching();
         
         // Keep the process running
         process.on('SIGINT', () => {
@@ -391,30 +310,31 @@ async function main() {
         logger.info('Monitoring for new tokens and waiting for signals...');
 
         // Perform rug checks on specified addresses
-        const addressesToCheck = [
-            'BBc9zfiSMgqmmTqtFGE1xHzb1XcPzYSLQNLYTVoMpump',
-            '713RhkKwaZi2DwdEhCpmgGLfKuYCtrm7qFEzgsCspump',
-            'DLviyvDVYKbSrrwddrYbrPZCFaW4ZUgtjzMZZnuUpump',
-            'GPpjfYESvvK2hJag2C4EwGYsbb7GWVgD9azHckP1pump',
-            '3uAXWENsKTTZJ64uPrbVRsdftiLGdtbPpkfqW3M9pump'
-        ];
+        // const addressesToCheck = [
+        //     'BBc9zfiSMgqmmTqtFGE1xHzb1XcPzYSLQNLYTVoMpump',
+        //     '713RhkKwaZi2DwdEhCpmgGLfKuYCtrm7qFEzgsCspump',
+        //     'DLviyvDVYKbSrrwddrYbrPZCFaW4ZUgtjzMZZnuUpump',
+        //     'GPpjfYESvvK2hJag2C4EwGYsbb7GWVgD9azHckP1pump',
+        //     '3uAXWENsKTTZJ64uPrbVRsdftiLGdtbPpkfqW3M9pump'
+        // ];
 
-        logger.info('Starting rug checks for specified addresses...');
-        for (const address of addressesToCheck) {
-            try {
-                logger.info(`Checking address: ${address}`);
-                const isRugCheckPassed = await getRugCheckConfirmed(address);
-              if (!isRugCheckPassed) {
-                  console.log("🚫 Rug Check not passed! Transaction aborted.");
-                  console.log("🟢 Resuming looking for new tokens...\n");
+        // logger.info('Starting rug checks for specified addresses...');
+        // for (const address of addressesToCheck) {
+        //   await sleep(2000);
+        //     try {
+        //         logger.info(`Checking address: ${address}`);
+        //         const isRugCheckPassed = await getRugCheckConfirmed(address);
+        //       if (!isRugCheckPassed) {
+        //           console.log("🚫 Rug Check not passed! Transaction aborted.");
+        //           console.log("🟢 Resuming looking for new tokens...\n");
                   
-              } else {
-                logger.info(`✅✅✅ Rug check passed for address: ${address}`);
-              }
-            } catch (error) {
-                logger.error(`Error checking address ${address}:`, error);
-            }
-        }
+        //       } else {
+        //         logger.info(`✅✅✅ Rug check passed for address: ${address}`);
+        //       }
+        //     } catch (error) {
+        //         logger.error(`Error checking address ${address}:`, error);
+        //     }
+        // }
 
     } catch (error) {
         logger.error('Error starting bot:', error);

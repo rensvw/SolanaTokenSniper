@@ -1,0 +1,199 @@
+2025-02-04T15:06:52: 📈 Current Holdings via ✅ Jupiter Agregator
+2025-02-04T15:06:52: ================================================================================
+2025-02-04T15:06:52: No token holdings yet as of 2025-02-04T14:06:52.652Z
+2025-02-04T15:06:52: 
+2025-02-04T15:06:52: 
+
+📜 Action Logs
+2025-02-04T15:06:52: ================================================================================
+2025-02-04T15:06:52: Last Update:  2025-02-04T14:06:52.653Z
+2025-02-04T15:06:52: 
+2025-02-04T15:06:52: [2025-02-04T14:06:52.755Z] [AnalyseManagerService] Initializing DEX analysis manager
+2025-02-04T15:06:52: [33m[2025-02-04T15:06:52.756] [INFO] - [Running gramJS version 2.26.15][0m
+2025-02-04T15:06:52: [33m[2025-02-04T15:06:52.758] [INFO] - [Running gramJS version 2.26.15][0m
+2025-02-04T15:06:52: [33m[2025-02-04T15:06:52.759] [INFO] - [Connecting to 149.154.167.91:443/TCPFull...][0m
+2025-02-04T15:06:52: [33m[2025-02-04T15:06:52.761] [INFO] - [Connecting to 149.154.167.91:443/TCPFull...][0m
+2025-02-04T15:06:52: [33m[2025-02-04T15:06:52.773] [INFO] - [Connection to 149.154.167.91:443/TCPFull complete!][0m
+2025-02-04T15:06:52: [33m[2025-02-04T15:06:52.773] [INFO] - [Using LAYER 193 for initial connect][0m
+2025-02-04T15:06:52: [33m[2025-02-04T15:06:52.776] [INFO] - [Connection to 149.154.167.91:443/TCPFull complete!][0m
+2025-02-04T15:06:52: [33m[2025-02-04T15:06:52.776] [INFO] - [Using LAYER 193 for initial connect][0m
+2025-02-04T15:06:53: [2025-02-04T14:06:53.627Z] [TelegramMonitorService] Channel is hosted on DC4
+2025-02-04T15:06:53: [2025-02-04T14:06:53.628Z] [TelegramMonitorService] DC4 is located in Amsterdam, Netherlands
+2025-02-04T15:06:53: [2025-02-04T14:06:53.653Z] [TelegramMonitorService] Channel is hosted on DC4
+2025-02-04T15:06:53: [2025-02-04T14:06:53.653Z] [TelegramMonitorService] DC4 is located in Amsterdam, Netherlands
+2025-02-04T15:06:54: [2025-02-04T14:06:54.226Z] [TelegramMonitorService] === Channel Locations ===
+2025-02-04T15:06:54: [2025-02-04T14:06:54.226Z] [TelegramMonitorService] =====================
+2025-02-04T15:06:54: [2025-02-04T14:06:54.227Z] [TelegramMonitorService] Telegram client initialized on DC4
+2025-02-04T15:06:54: [2025-02-04T14:06:54.228Z] [TokenMonitorService] Starting token monitoring service
+2025-02-04T15:06:54: [2025-02-04T14:06:54.238Z] [TokenMonitorService] Entered monitoring time window
+2025-02-04T15:06:54: [2025-02-04T14:06:54.259Z] [TokenSniper] Token Sniper Bot started successfully
+2025-02-04T15:06:54: [2025-02-04T14:06:54.259Z] [TokenSniper] Monitoring for new tokens and waiting for signals...
+2025-02-04T15:06:54: [2025-02-04T14:06:54.259Z] [TokenSniper] Starting rug checks for specified addresses...
+2025-02-04T15:06:54: [2025-02-04T14:06:54.328Z] [TelegramMonitorService] === Channel Locations ===
+2025-02-04T15:06:54: [2025-02-04T14:06:54.328Z] [TelegramMonitorService] =====================
+2025-02-04T15:06:54: [2025-02-04T14:06:54.328Z] [TelegramMonitorService] Telegram client initialized on DC4
+2025-02-04T15:06:54: [2025-02-04T14:06:54.328Z] [TokenSniper] Fetching latest messages from the channel...
+2025-02-04T15:06:54: [2025-02-04T14:06:54.464Z] [TokenSniper] 
+🔓 WebSocket is open and listening.
+2025-02-04T15:06:54: [2025-02-04T14:06:54.465Z] [TokenSniper] Subscription request sent
+2025-02-04T15:06:54: [2025-02-04T14:06:54.483Z] [TokenSniper] ✅ Subscription confirmed
+2025-02-04T15:06:55: [2025-02-04T14:06:55.260Z] [TokenSniper] Checking address: BBc9zfiSMgqmmTqtFGE1xHzb1XcPzYSLQNLYTVoMpump
+2025-02-04T15:06:57: 📈 Current Holdings via ✅ Jupiter Agregator
+2025-02-04T15:06:57: ================================================================================
+2025-02-04T15:06:57: No token holdings yet as of 2025-02-04T14:06:57.654Z
+2025-02-04T15:06:57: 
+2025-02-04T15:06:57: 
+
+📜 Action Logs
+2025-02-04T15:06:57: ================================================================================
+2025-02-04T15:06:57: Last Update:  2025-02-04T14:06:57.655Z
+2025-02-04T15:06:57: 
+2025-02-04T15:07:02: 📈 Current Holdings via ✅ Jupiter Agregator
+2025-02-04T15:07:02: ================================================================================
+2025-02-04T15:07:02: No token holdings yet as of 2025-02-04T14:07:02.656Z
+2025-02-04T15:07:02: 
+2025-02-04T15:07:02: 
+
+📜 Action Logs
+2025-02-04T15:07:02: ================================================================================
+2025-02-04T15:07:02: Last Update:  2025-02-04T14:07:02.656Z
+2025-02-04T15:07:02: 
+2025-02-04T15:07:06: [2025-02-04T14:07:06.267Z] [TokenSniper] Checking address: 713RhkKwaZi2DwdEhCpmgGLfKuYCtrm7qFEzgsCspump
+2025-02-04T15:07:06: [2025-02-04T14:07:06.819Z] [TokenSniper] ✅✅✅ Rug check passed for address: 713RhkKwaZi2DwdEhCpmgGLfKuYCtrm7qFEzgsCspump
+2025-02-04T15:07:07: 📈 Current Holdings via ✅ Jupiter Agregator
+2025-02-04T15:07:07: ================================================================================
+2025-02-04T15:07:07: No token holdings yet as of 2025-02-04T14:07:07.657Z
+2025-02-04T15:07:07: 
+2025-02-04T15:07:07: 
+
+📜 Action Logs
+2025-02-04T15:07:07: ================================================================================
+2025-02-04T15:07:07: Last Update:  2025-02-04T14:07:07.657Z
+2025-02-04T15:07:07: 
+2025-02-04T15:07:07: [2025-02-04T14:07:07.819Z] [TokenSniper] Checking address: DLviyvDVYKbSrrwddrYbrPZCFaW4ZUgtjzMZZnuUpump
+2025-02-04T15:07:08: [2025-02-04T14:07:08.298Z] [TokenSniper] ✅✅✅ Rug check passed for address: DLviyvDVYKbSrrwddrYbrPZCFaW4ZUgtjzMZZnuUpump
+2025-02-04T15:07:09: [2025-02-04T14:07:09.298Z] [TokenSniper] Checking address: GPpjfYESvvK2hJag2C4EwGYsbb7GWVgD9azHckP1pump
+2025-02-04T15:07:09: [2025-02-04T14:07:09.699Z] [TokenSniper] ✅✅✅ Rug check passed for address: GPpjfYESvvK2hJag2C4EwGYsbb7GWVgD9azHckP1pump
+2025-02-04T15:07:10: [2025-02-04T14:07:10.700Z] [TokenSniper] Checking address: 3uAXWENsKTTZJ64uPrbVRsdftiLGdtbPpkfqW3M9pump
+2025-02-04T15:07:11: [2025-02-04T14:07:11.176Z] [TokenSniper] ✅✅✅ Rug check passed for address: 3uAXWENsKTTZJ64uPrbVRsdftiLGdtbPpkfqW3M9pump
+2025-02-04T15:07:12: 📈 Current Holdings via ✅ Jupiter Agregator
+2025-02-04T15:07:12: ================================================================================
+2025-02-04T15:07:12: No token holdings yet as of 2025-02-04T14:07:12.659Z
+2025-02-04T15:07:12: 
+2025-02-04T15:07:12: 
+
+📜 Action Logs
+2025-02-04T15:07:12: ================================================================================
+2025-02-04T15:07:12: Last Update:  2025-02-04T14:07:12.659Z
+2025-02-04T15:07:12: 
+2025-02-04T15:07:17: 📈 Current Holdings via ✅ Jupiter Agregator
+2025-02-04T15:07:17: ================================================================================
+2025-02-04T15:07:17: No token holdings yet as of 2025-02-04T14:07:17.658Z
+2025-02-04T15:07:17: 
+2025-02-04T15:07:17: 
+
+📜 Action Logs
+2025-02-04T15:07:17: ================================================================================
+2025-02-04T15:07:17: Last Update:  2025-02-04T14:07:17.659Z
+2025-02-04T15:07:17: 
+2025-02-04T15:07:22: 📈 Current Holdings via ✅ Jupiter Agregator
+2025-02-04T15:07:22: ================================================================================
+2025-02-04T15:07:22: No token holdings yet as of 2025-02-04T14:07:22.659Z
+2025-02-04T15:07:22: 
+2025-02-04T15:07:22: 
+
+📜 Action Logs
+2025-02-04T15:07:22: ================================================================================
+2025-02-04T15:07:22: Last Update:  2025-02-04T14:07:22.659Z
+2025-02-04T15:07:22: 
+2025-02-04T15:07:24: [2025-02-04T14:07:24.464Z] [TokenSniper] Ping sent to keep connection alive
+2025-02-04T15:07:27: 📈 Current Holdings via ✅ Jupiter Agregator
+2025-02-04T15:07:27: ================================================================================
+2025-02-04T15:07:27: No token holdings yet as of 2025-02-04T14:07:27.660Z
+2025-02-04T15:07:27: 
+2025-02-04T15:07:27: 
+
+📜 Action Logs
+2025-02-04T15:07:27: ================================================================================
+2025-02-04T15:07:27: Last Update:  2025-02-04T14:07:27.661Z
+2025-02-04T15:07:27: 
+2025-02-04T15:07:32: 📈 Current Holdings via ✅ Jupiter Agregator
+2025-02-04T15:07:32: ================================================================================
+2025-02-04T15:07:32: No token holdings yet as of 2025-02-04T14:07:32.661Z
+2025-02-04T15:07:32: 
+2025-02-04T15:07:32: 
+
+📜 Action Logs
+2025-02-04T15:07:32: ================================================================================
+2025-02-04T15:07:32: Last Update:  2025-02-04T14:07:32.661Z
+2025-02-04T15:07:32: 
+2025-02-04T15:07:37: 📈 Current Holdings via ✅ Jupiter Agregator
+2025-02-04T15:07:37: ================================================================================
+2025-02-04T15:07:37: No token holdings yet as of 2025-02-04T14:07:37.663Z
+2025-02-04T15:07:37: 
+2025-02-04T15:07:37: 
+
+📜 Action Logs
+2025-02-04T15:07:37: ================================================================================
+2025-02-04T15:07:37: Last Update:  2025-02-04T14:07:37.663Z
+2025-02-04T15:07:37: 
+2025-02-04T15:07:37: [2025-02-04T14:07:37.937Z] [TokenSniper] Shutting down WebSocket connection...
+2025-02-04T15:07:42: 📈 Current Holdings via ✅ Jupiter Agregator
+2025-02-04T15:07:42: ================================================================================
+2025-02-04T15:07:42: No token holdings yet as of 2025-02-04T14:07:42.664Z
+2025-02-04T15:07:42: 
+2025-02-04T15:07:42: 
+
+📜 Action Logs
+2025-02-04T15:07:42: ================================================================================
+2025-02-04T15:07:42: Last Update:  2025-02-04T14:07:42.664Z
+2025-02-04T15:07:42: 
+2025-02-04T15:07:51: [2025-02-04T14:07:51.369Z] [AnalyseManagerService] Initializing DEX analysis manager
+2025-02-04T15:07:51: [33m[2025-02-04T15:07:51.371] [INFO] - [Running gramJS version 2.26.15][0m
+2025-02-04T15:07:51: [33m[2025-02-04T15:07:51.372] [INFO] - [Running gramJS version 2.26.15][0m
+2025-02-04T15:07:51: [33m[2025-02-04T15:07:51.374] [INFO] - [Connecting to 149.154.167.91:443/TCPFull...][0m
+2025-02-04T15:07:51: [33m[2025-02-04T15:07:51.375] [INFO] - [Connecting to 149.154.167.91:443/TCPFull...][0m
+2025-02-04T15:07:51: [33m[2025-02-04T15:07:51.387] [INFO] - [Connection to 149.154.167.91:443/TCPFull complete!][0m
+2025-02-04T15:07:51: [33m[2025-02-04T15:07:51.388] [INFO] - [Using LAYER 193 for initial connect][0m
+2025-02-04T15:07:51: [33m[2025-02-04T15:07:51.391] [INFO] - [Connection to 149.154.167.91:443/TCPFull complete!][0m
+2025-02-04T15:07:51: [33m[2025-02-04T15:07:51.391] [INFO] - [Using LAYER 193 for initial connect][0m
+2025-02-04T15:07:52: [2025-02-04T14:07:52.165Z] [TelegramMonitorService] Channel is hosted on DC4
+2025-02-04T15:07:52: [2025-02-04T14:07:52.165Z] [TelegramMonitorService] DC4 is located in Amsterdam, Netherlands
+2025-02-04T15:07:52: [2025-02-04T14:07:52.227Z] [TelegramMonitorService] Channel is hosted on DC4
+2025-02-04T15:07:52: [2025-02-04T14:07:52.227Z] [TelegramMonitorService] DC4 is located in Amsterdam, Netherlands
+2025-02-04T15:07:52: [2025-02-04T14:07:52.779Z] [TelegramMonitorService] === Channel Locations ===
+2025-02-04T15:07:52: [2025-02-04T14:07:52.780Z] [TelegramMonitorService] =====================
+2025-02-04T15:07:52: [2025-02-04T14:07:52.781Z] [TelegramMonitorService] Telegram client initialized on DC4
+2025-02-04T15:07:52: [2025-02-04T14:07:52.781Z] [TokenMonitorService] Starting token monitoring service
+2025-02-04T15:07:52: [2025-02-04T14:07:52.793Z] [TokenMonitorService] Entered monitoring time window
+2025-02-04T15:07:52: [2025-02-04T14:07:52.814Z] [TokenSniper] Token Sniper Bot started successfully
+2025-02-04T15:07:52: [2025-02-04T14:07:52.814Z] [TokenSniper] Monitoring for new tokens and waiting for signals...
+2025-02-04T15:07:52: [2025-02-04T14:07:52.814Z] [TokenSniper] Starting rug checks for specified addresses...
+2025-02-04T15:07:52: [2025-02-04T14:07:52.848Z] [TelegramMonitorService] === Channel Locations ===
+2025-02-04T15:07:52: [2025-02-04T14:07:52.849Z] [TelegramMonitorService] =====================
+2025-02-04T15:07:52: [2025-02-04T14:07:52.849Z] [TelegramMonitorService] Telegram client initialized on DC4
+2025-02-04T15:07:52: [2025-02-04T14:07:52.849Z] [TokenSniper] Fetching latest messages from the channel...
+2025-02-04T15:07:52: [2025-02-04T14:07:52.967Z] [TokenSniper] 
+🔓 WebSocket is open and listening.
+2025-02-04T15:07:52: [2025-02-04T14:07:52.967Z] [TokenSniper] Subscription request sent
+2025-02-04T15:07:53: [2025-02-04T14:07:53.013Z] [TokenSniper] ✅ Subscription confirmed
+2025-02-04T15:07:53: [2025-02-04T14:07:53.814Z] [TokenSniper] Checking address: BBc9zfiSMgqmmTqtFGE1xHzb1XcPzYSLQNLYTVoMpump
+2025-02-04T15:07:53: [2025-02-04T14:07:53.927Z] [TokenSniper] ✅✅✅ Rug check passed for address: BBc9zfiSMgqmmTqtFGE1xHzb1XcPzYSLQNLYTVoMpump
+2025-02-04T15:07:54: [2025-02-04T14:07:54.927Z] [TokenSniper] Checking address: 713RhkKwaZi2DwdEhCpmgGLfKuYCtrm7qFEzgsCspump
+2025-02-04T15:07:54: [2025-02-04T14:07:54.972Z] [TokenSniper] ✅✅✅ Rug check passed for address: 713RhkKwaZi2DwdEhCpmgGLfKuYCtrm7qFEzgsCspump
+2025-02-04T15:07:55: [2025-02-04T14:07:55.973Z] [TokenSniper] Checking address: DLviyvDVYKbSrrwddrYbrPZCFaW4ZUgtjzMZZnuUpump
+2025-02-04T15:07:56: [2025-02-04T14:07:56.016Z] [TokenSniper] ✅✅✅ Rug check passed for address: DLviyvDVYKbSrrwddrYbrPZCFaW4ZUgtjzMZZnuUpump
+2025-02-04T15:07:57: [2025-02-04T14:07:57.016Z] [TokenSniper] Checking address: GPpjfYESvvK2hJag2C4EwGYsbb7GWVgD9azHckP1pump
+2025-02-04T15:07:57: [2025-02-04T14:07:57.062Z] [TokenSniper] ✅✅✅ Rug check passed for address: GPpjfYESvvK2hJag2C4EwGYsbb7GWVgD9azHckP1pump
+2025-02-04T15:07:58: [2025-02-04T14:07:58.063Z] [TokenSniper] Checking address: 3uAXWENsKTTZJ64uPrbVRsdftiLGdtbPpkfqW3M9pump
+2025-02-04T15:07:58: [2025-02-04T14:07:58.107Z] [TokenSniper] ✅✅✅ Rug check passed for address: 3uAXWENsKTTZJ64uPrbVRsdftiLGdtbPpkfqW3M9pump
+2025-02-04T15:08:22: [2025-02-04T14:08:22.967Z] [TokenSniper] Ping sent to keep connection alive
+2025-02-04T15:08:24: [2025-02-04T14:08:24.490Z] [TokenSniper] New pool creation detected with signature: tbegmT4Co5eZLG2zNtaydb4RV47qfjvxdb3dPcXbNQq5At7Xm8KHKqpupL467dwQh72StkU4dRofZdZk6CNcGxJ
+2025-02-04T15:08:24: Waiting 3 seconds for transaction to be confirmed...
+2025-02-04T15:08:27: Attempt 1 of 10 to fetch transaction details...
+2025-02-04T15:08:27: Successfully fetched transaction details!
+2025-02-04T15:08:27: SOL Token Account: So11111111111111111111111111111111111111112
+2025-02-04T15:08:27: New Token Account: 4rizgZeBC6Zk9XUJYS3KaQ8D9aZ5FXmLyBULbJQmmYAs
+2025-02-04T15:08:27: [2025-02-04T14:08:27.856Z] [TokenSniper] Found new token mint: 4rizgZeBC6Zk9XUJYS3KaQ8D9aZ5FXmLyBULbJQmmYAs
+2025-02-04T15:08:27: Handling new token from websocket with address: 4rizgZeBC6Zk9XUJYS3KaQ8D9aZ5FXmLyBULbJQmmYAs
+2025-02-04T15:08:29: [2025-02-04T14:08:29.975Z] [TokenSniper] Shutting down WebSocket connection...

@@ -340,169 +340,192 @@ export async function createSwapTransaction(solMint: string | null, tokenMint: s
 }
 
 export async function getRugCheckConfirmed(tokenMint: string): Promise<boolean> {
-  const rugResponse = await axios.get<RugResponseExtended>("https://api.rugcheck.xyz/v1/tokens/" + tokenMint + "/report", {
-    timeout: config.tx.get_timeout,
-  });
+  let retryCount = 0;
+  const maxRetries = config.tx.fetch_tx_max_retries;
 
-  if (!rugResponse.data) return false;
+  while (retryCount < maxRetries) {
+    try {
+      const rugResponse = await axios.get<RugResponseExtended>("https://api.rugcheck.xyz/v1/tokens/" + tokenMint + "/report", {
+        timeout: config.tx.get_timeout,
+      });
 
-  if (config.rug_check.verbose_log && config.rug_check.verbose_log === true) {
-    console.log(rugResponse.data);
-  }
+      if (!rugResponse.data) return false;
 
-  // Extract information
-  const tokenReport: RugResponseExtended = rugResponse.data;
-  const tokenCreator = tokenReport.creator ? tokenReport.creator : tokenMint;
-  const mintAuthority = tokenReport.token.mintAuthority;
-  const freezeAuthority = tokenReport.token.freezeAuthority;
-  const isInitialized = tokenReport.token.isInitialized;
-  const supply = tokenReport.token.supply;
-  const decimals = tokenReport.token.decimals;
-  const tokenName = tokenReport.tokenMeta.name;
-  const tokenSymbol = tokenReport.tokenMeta.symbol;
-  const tokenMutable = tokenReport.tokenMeta.mutable;
-  let topHolders = tokenReport.topHolders;
-  const marketsLength = tokenReport.markets ? tokenReport.markets.length : 0;
-  const totalLPProviders = tokenReport.totalLPProviders;
-  const totalMarketLiquidity = tokenReport.totalMarketLiquidity;
-  const isRugged = tokenReport.rugged;
-  const rugScore = tokenReport.score;
-  const rugRisks = tokenReport.risks
-    ? tokenReport.risks
-    : [
+      if (config.rug_check.verbose_log && config.rug_check.verbose_log === true) {
+        console.log(rugResponse.data);
+      }
+
+      // Extract information
+      const tokenReport: RugResponseExtended = rugResponse.data;
+      const tokenCreator = tokenReport.creator ? tokenReport.creator : tokenMint;
+      const mintAuthority = tokenReport.token.mintAuthority;
+      const freezeAuthority = tokenReport.token.freezeAuthority;
+      const isInitialized = tokenReport.token.isInitialized;
+      const supply = tokenReport.token.supply;
+      const decimals = tokenReport.token.decimals;
+      const tokenName = tokenReport.tokenMeta.name;
+      const tokenSymbol = tokenReport.tokenMeta.symbol;
+      const tokenMutable = tokenReport.tokenMeta.mutable;
+      let topHolders = tokenReport.topHolders;
+      const marketsLength = tokenReport.markets ? tokenReport.markets.length : 0;
+      const totalLPProviders = tokenReport.totalLPProviders;
+      const totalMarketLiquidity = tokenReport.totalMarketLiquidity;
+      const isRugged = tokenReport.rugged;
+      const rugScore = tokenReport.score;
+      const rugRisks = tokenReport.risks
+        ? tokenReport.risks
+        : [
+            {
+              name: "Good",
+              value: "",
+              description: "",
+              score: 0,
+              level: "good",
+            },
+          ];
+
+      // Update topholders if liquidity pools are excluded
+      if (config.rug_check.exclude_lp_from_topholders) {
+        // local types
+        type Market = {
+          liquidityA?: string;
+          liquidityB?: string;
+        };
+
+        const markets: Market[] | undefined = tokenReport.markets;
+        if (markets) {
+          // Safely extract liquidity addresses from markets
+          const liquidityAddresses: string[] = (markets ?? [])
+            .flatMap((market) => [market.liquidityA, market.liquidityB])
+            .filter((address): address is string => !!address);
+
+          // Filter out topHolders that match any of the liquidity addresses
+          topHolders = topHolders.filter((holder) => !liquidityAddresses.includes(holder.address));
+        }
+      }
+
+      // Get config
+      const rugCheckConfig = config.rug_check;
+      const rugCheckLegacy = rugCheckConfig.legacy_not_allowed;
+
+      // Set conditions
+      const conditions = [
         {
-          name: "Good",
-          value: "",
-          description: "",
-          score: 0,
-          level: "good",
+          check: !rugCheckConfig.allow_mint_authority && mintAuthority !== null,
+          message: "🚫 Mint authority should be null",
+        },
+        {
+          check: !rugCheckConfig.allow_not_initialized && !isInitialized,
+          message: "🚫 Token is not initialized",
+        },
+        {
+          check: !rugCheckConfig.allow_freeze_authority && freezeAuthority !== null,
+          message: "🚫 Freeze authority should be null",
+        },
+        {
+          check: !rugCheckConfig.allow_mutable && tokenMutable !== false,
+          message: "🚫 Mutable should be false",
+        },
+        {
+          check: !rugCheckConfig.allow_insider_topholders && topHolders.some((holder) => holder.insider),
+          message: "🚫 Insider accounts should not be part of the top holders",
+        },
+        {
+          check: topHolders.some((holder) => holder.pct > rugCheckConfig.max_alowed_pct_topholders),
+          message: "🚫 An individual top holder cannot hold more than the allowed percentage of the total supply",
+        },
+        {
+          check: totalLPProviders < rugCheckConfig.min_total_lp_providers,
+          message: "🚫 Not enough LP Providers.",
+        },
+        {
+          check: marketsLength < rugCheckConfig.min_total_markets,
+          message: "🚫 Not enough Markets.",
+        },
+        {
+          check: totalMarketLiquidity < rugCheckConfig.min_total_market_Liquidity,
+          message: "🚫 Not enough Market Liquidity.",
+        },
+        {
+          check: !rugCheckConfig.allow_rugged && isRugged, //true
+          message: "🚫 Token is rugged",
+        },
+        {
+          check: rugCheckConfig.block_symbols.includes(tokenSymbol),
+          message: "🚫 Symbol is blocked",
+        },
+        {
+          check: rugCheckConfig.block_names.includes(tokenName),
+          message: "🚫 Name is blocked",
+        },
+        {
+          check: rugScore > rugCheckConfig.max_score && rugCheckConfig.max_score !== 0,
+          message: "🚫 Rug score to high.",
+        },
+        {
+          check: rugRisks.some((risk) => rugCheckLegacy.includes(risk.name)),
+          message: "🚫 Token has legacy risks that are not allowed.",
         },
       ];
 
-  // Update topholders if liquidity pools are excluded
-  if (config.rug_check.exclude_lp_from_topholders) {
-    // local types
-    type Market = {
-      liquidityA?: string;
-      liquidityB?: string;
-    };
+      // If tracking duplicate tokens is enabled
+      if (config.rug_check.block_returning_token_names || config.rug_check.block_returning_token_creators) {
+        // Get duplicates based on token min and creator
+        const duplicate = await selectTokenByNameAndCreator(tokenName, tokenCreator);
 
-    const markets: Market[] | undefined = tokenReport.markets;
-    if (markets) {
-      // Safely extract liquidity addresses from markets
-      const liquidityAddresses: string[] = (markets ?? [])
-        .flatMap((market) => [market.liquidityA, market.liquidityB])
-        .filter((address): address is string => !!address);
-
-      // Filter out topHolders that match any of the liquidity addresses
-      topHolders = topHolders.filter((holder) => !liquidityAddresses.includes(holder.address));
-    }
-  }
-
-  // Get config
-  const rugCheckConfig = config.rug_check;
-  const rugCheckLegacy = rugCheckConfig.legacy_not_allowed;
-
-  // Set conditions
-  const conditions = [
-    {
-      check: !rugCheckConfig.allow_mint_authority && mintAuthority !== null,
-      message: "🚫 Mint authority should be null",
-    },
-    {
-      check: !rugCheckConfig.allow_not_initialized && !isInitialized,
-      message: "🚫 Token is not initialized",
-    },
-    {
-      check: !rugCheckConfig.allow_freeze_authority && freezeAuthority !== null,
-      message: "🚫 Freeze authority should be null",
-    },
-    {
-      check: !rugCheckConfig.allow_mutable && tokenMutable !== false,
-      message: "🚫 Mutable should be false",
-    },
-    {
-      check: !rugCheckConfig.allow_insider_topholders && topHolders.some((holder) => holder.insider),
-      message: "🚫 Insider accounts should not be part of the top holders",
-    },
-    {
-      check: topHolders.some((holder) => holder.pct > rugCheckConfig.max_alowed_pct_topholders),
-      message: "🚫 An individual top holder cannot hold more than the allowed percentage of the total supply",
-    },
-    {
-      check: totalLPProviders < rugCheckConfig.min_total_lp_providers,
-      message: "🚫 Not enough LP Providers.",
-    },
-    {
-      check: marketsLength < rugCheckConfig.min_total_markets,
-      message: "🚫 Not enough Markets.",
-    },
-    {
-      check: totalMarketLiquidity < rugCheckConfig.min_total_market_Liquidity,
-      message: "🚫 Not enough Market Liquidity.",
-    },
-    {
-      check: !rugCheckConfig.allow_rugged && isRugged, //true
-      message: "🚫 Token is rugged",
-    },
-    {
-      check: rugCheckConfig.block_symbols.includes(tokenSymbol),
-      message: "🚫 Symbol is blocked",
-    },
-    {
-      check: rugCheckConfig.block_names.includes(tokenName),
-      message: "🚫 Name is blocked",
-    },
-    {
-      check: rugScore > rugCheckConfig.max_score && rugCheckConfig.max_score !== 0,
-      message: "🚫 Rug score to high.",
-    },
-    {
-      check: rugRisks.some((risk) => rugCheckLegacy.includes(risk.name)),
-      message: "🚫 Token has legacy risks that are not allowed.",
-    },
-  ];
-
-  // If tracking duplicate tokens is enabled
-  if (config.rug_check.block_returning_token_names || config.rug_check.block_returning_token_creators) {
-    // Get duplicates based on token min and creator
-    const duplicate = await selectTokenByNameAndCreator(tokenName, tokenCreator);
-
-    // Verify if duplicate token or creator was returned
-    if (duplicate.length !== 0) {
-      if (config.rug_check.block_returning_token_names && duplicate.some((token) => token.name === tokenName)) {
-        console.log("🚫 Token with this name was already created");
-        return false;
+        // Verify if duplicate token or creator was returned
+        if (duplicate.length !== 0) {
+          if (config.rug_check.block_returning_token_names && duplicate.some((token) => token.name === tokenName)) {
+            console.log("🚫 Token with this name was already created");
+            return false;
+          }
+          if (config.rug_check.block_returning_token_creators && duplicate.some((token) => token.creator === tokenCreator)) {
+            console.log("🚫 Token from this creator was already created");
+            return false;
+          }
+        }
       }
-      if (config.rug_check.block_returning_token_creators && duplicate.some((token) => token.creator === tokenCreator)) {
-        console.log("🚫 Token from this creator was already created");
-        return false;
+
+      // Create new token record
+      const newToken: NewTokenRecord = {
+        time: Date.now(),
+        mint: tokenMint,
+        name: tokenName,
+        creator: tokenCreator,
+      };
+      await insertNewToken(newToken).catch((err) => {
+        if (config.rug_check.block_returning_token_names || config.rug_check.block_returning_token_creators) {
+          console.log("⛔ Unable to store new token for tracking duplicate tokens: " + err);
+        }
+      });
+
+      //Validate conditions
+      for (const condition of conditions) {
+        if (condition.check) {
+          console.log(condition.message);
+          return false;
+        }
       }
-    }
-  }
 
-  // Create new token record
-  const newToken: NewTokenRecord = {
-    time: Date.now(),
-    mint: tokenMint,
-    name: tokenName,
-    creator: tokenCreator,
-  };
-  await insertNewToken(newToken).catch((err) => {
-    if (config.rug_check.block_returning_token_names || config.rug_check.block_returning_token_creators) {
-      console.log("⛔ Unable to store new token for tracking duplicate tokens: " + err);
-    }
-  });
-
-  //Validate conditions
-  for (const condition of conditions) {
-    if (condition.check) {
-      console.log(condition.message);
+      return true;
+    } catch (error: any) {
+      console.log(`Attempt ${retryCount + 1} failed: ${error.message}`);
+      
+      retryCount++;
+      
+      if (retryCount < maxRetries) {
+        const delay = Math.min(4000 * Math.pow(1.5, retryCount), 15000);
+        console.log(`Waiting ${delay / 1000} seconds before next attempt...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      console.log("All attempts to fetch rug check data failed");
       return false;
     }
   }
 
-  return true;
+  return false;
 }
 
 export async function fetchAndSaveSwapDetails(tx: string): Promise<boolean> {

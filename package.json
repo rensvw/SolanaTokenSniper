@@ -9,7 +9,13 @@
     "dev": "ts-node src/index.ts",
     "tracker": "ts-node src/tracker/index.ts",
     "test": "ts-node src/test.ts",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop ecosystem.config.js",
+    "pm2:restart": "pm2 restart ecosystem.config.js",
+    "pm2:status": "pm2 status",
+    "pm2:logs": "pm2 logs",
+    "pm2:monit": "pm2 monit"
   },
   "keywords": [],
   "author": "https://x.com/digbenjamins",
@@ -36,6 +42,7 @@
     "dotenv": "^16.4.5",
     "long": "^5.2.4",
     "luxon": "^3.5.0",
+    "pm2": "^5.3.1",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "telegram": "^2.26.16",
