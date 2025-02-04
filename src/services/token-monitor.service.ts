@@ -280,11 +280,32 @@ export class TokenMonitorService {
         const correctToken = await this.dbService.getToken(tokenAddress);
         if (!correctToken) {
             this.logger.info(`Correct token ${tokenAddress} not yet bought, initiating purchase...`);
+            
+            // Fetch token metadata
+            let tokenName = "Unknown";
+            let totalSupply = 0;
+            try {
+                const metadataResponse = await axios.get(`${process.env.HELIUS_HTTPS_URI}/v0/tokens/${tokenAddress}`);
+                tokenName = metadataResponse.data.name || "Unknown";
+                totalSupply = metadataResponse.data.supply || 0;
+            } catch (error) {
+                this.logger.error(`Failed to fetch token metadata for ${tokenAddress}:`, error);
+            }
+
             const currentPrice = await this.getCurrentPrice(tokenAddress);
             if (currentPrice !== null) {
-                this.logger.info(`Adding token ${tokenAddress} to monitor at price ${currentPrice}`);
-                await this.addToken(tokenAddress, currentPrice);
+                const marketCap = currentPrice * totalSupply;
+                this.logger.info(`Adding token ${tokenAddress} (${tokenName}) to monitor at price ${currentPrice}`);
+                await this.addToken(tokenAddress, currentPrice, tokenName, totalSupply, marketCap);
                 await this.buyToken(tokenAddress);
+
+                // Display trading links
+                this.logger.info("\n📊 Trading Links for correct token:");
+                this.logger.info("👽 GMGN: https://gmgn.ai/sol/token/" + tokenAddress);
+                this.logger.info("😈 BullX: https://neo.bullx.io/terminal?chainId=1399811149&address=" + tokenAddress);
+                this.logger.info("🦊 Raydium: https://raydium.io/swap/?inputCurrency=sol&outputCurrency=" + tokenAddress);
+                this.logger.info("🌟 Solscan: https://solscan.io/token/" + tokenAddress);
+                this.logger.info("🔍 Birdeye: https://birdeye.so/token/" + tokenAddress + "?chain=solana\n");
             } else {
                 this.logger.warn(`Could not get current price for token ${tokenAddress}, skipping purchase`);
             }
