@@ -6,6 +6,7 @@ import { config } from '../config';
 import { WebSocketRequest } from '../types';
 import { createSwapTransaction, getRugCheckConfirmed } from '../transactions';
 import { DatabaseService, TokenTrack } from './database.service';
+import { sleep } from 'telegram/Helpers';
 
 export class TokenMonitorService {
     private logger: Logger;
@@ -20,13 +21,18 @@ export class TokenMonitorService {
     }
 
     async initialize(): Promise<void> {
+        this.logger.info('Initializing TokenMonitorService...');
         await this.dbService.initialize();
         this.startCleanupInterval();
+        this.logger.info('TokenMonitorService initialized successfully');
     }
 
     private startCleanupInterval(): void {
+        this.logger.info(`Setting up cleanup interval for every ${this.CLEANUP_INTERVAL / (60 * 60 * 1000)} hours`);
         setInterval(() => {
+            this.logger.info(`Running cleanup for tokens older than ${this.TOKEN_MAX_AGE_HOURS} hours`);
             this.dbService.cleanupOldTokens(this.TOKEN_MAX_AGE_HOURS)
+                .then(() => this.logger.info('Cleanup completed successfully'))
                 .catch(error => this.logger.error('Failed to cleanup old tokens:', error));
         }, this.CLEANUP_INTERVAL);
     }
@@ -37,16 +43,23 @@ export class TokenMonitorService {
             return;
         }
 
+        this.logger.info('Starting token monitoring service...');
         this.monitoringInterval = setInterval(async () => {
             try {
                 const activeTokens = await this.dbService.getActiveTokens();
+                this.logger.info(`Checking ${activeTokens.length} active tokens`);
+                
                 for (const token of activeTokens) {
+                    this.logger.info(`Processing token: ${token.tokenAddress} (Last price: ${token.price})`);
                     await this.checkToken(token);
+                    this.logger.info(`Waiting 600ms before next token check`);
+                    await sleep(600);
                 }
             } catch (error) {
                 this.logger.error('Error during token monitoring:', error);
             }
         }, 10000); // Check every 10 seconds
+        this.logger.info('Token monitoring started successfully');
     }
 
     async stopMonitoring(): Promise<void> {
@@ -56,37 +69,51 @@ export class TokenMonitorService {
         }
     }
 
-    async addToken(tokenAddress: string, price: number): Promise<void> {
+    async addToken(tokenAddress: string, price: number, name?: string, totalSupply?: number, marketCap?: number): Promise<void> {
         const token: TokenTrack = {
             tokenAddress,
             timestamp: Date.now(),
             price,
             lastCheck: Date.now(),
-            status: 'active'
+            status: 'active',
+            name,
+            totalSupply,
+            marketCap
         };
 
         await this.dbService.addToken(token);
-        this.logger.info(`Added new token to monitor: ${tokenAddress}`);
+        this.logger.info(`Added new token to monitor: ${tokenAddress}${name ? ` (${name})` : ''}`);
     }
 
     private async checkToken(token: TokenTrack): Promise<void> {
         try {
+            this.logger.info(`Checking current price for token ${token.tokenAddress}...`);
             const currentPrice = await this.getCurrentPrice(token.tokenAddress);
+            
             if (currentPrice !== null) {
+                this.logger.info(`Current price for ${token.tokenAddress}: ${currentPrice} (Previous: ${token.price})`);
                 await this.dbService.updateTokenPrice(token.tokenAddress, currentPrice);
 
                 // Calculate price increase
                 const priceIncrease = ((currentPrice - token.price) / token.price) * 100;
-                if (priceIncrease > 200) { // 200% increase threshold
+                this.logger.info(`Price change for ${token.tokenAddress}: ${priceIncrease.toFixed(2)}%`);
+                
+                if (priceIncrease > 200) {
+                    this.logger.info(`Price increase threshold met (${priceIncrease.toFixed(2)}% > 200%), initiating buy...`);
                     await this.buyToken(token.tokenAddress);
                 }
+            } else {
+                this.logger.warn(`Could not fetch current price for token ${token.tokenAddress}`);
             }
 
             // Check if dev has sold
+            this.logger.info(`Checking if dev has sold for token ${token.tokenAddress}...`);
             const devSold = await this.checkDevSold(token.tokenAddress);
             if (devSold) {
-                await this.dbService.updateTokenStatus(token.tokenAddress, 'inactive');
                 this.logger.warn(`Developer sold tokens for ${token.tokenAddress}, marking as inactive`);
+                await this.dbService.updateTokenStatus(token.tokenAddress, 'inactive');
+            } else {
+                this.logger.info(`No developer sales detected for ${token.tokenAddress}`);
             }
         } catch (error) {
             this.logger.error(`Error checking token ${token.tokenAddress}:`, error);
@@ -135,9 +162,42 @@ export class TokenMonitorService {
                 return; // Skip token if rug check fails
             }
 
+            // Fetch token metadata from Helius
+            let tokenName = "Unknown";
+            let totalSupply = 0;
+            try {
+                const metadataResponse = await axios.get(`${process.env.HELIUS_HTTPS_URI}/v0/tokens/${txDetails.mint}`);
+                tokenName = metadataResponse.data.name || "Unknown";
+                totalSupply = metadataResponse.data.supply || 0;
+            } catch (error) {
+                this.logger.error(`Failed to fetch token metadata for ${txDetails.mint}:`, error);
+            }
+
+            // Get current price and calculate market cap
             const currentPrice = await this.getCurrentPrice(txDetails.mint);
             if (currentPrice !== null) {
-                await this.addToken(txDetails.mint, currentPrice);
+                const marketCap = currentPrice * totalSupply;
+                
+                // Add token with all metadata
+                await this.addToken(txDetails.mint, currentPrice, tokenName, totalSupply, marketCap);
+                
+                // Log token information and trading links
+                this.logger.success(`New token detected! 🚀`);
+                this.logger.info(`Token Name: ${tokenName}`);
+                this.logger.info(`Address: ${txDetails.mint}`);
+                this.logger.info(`Price: $${currentPrice.toFixed(6)}`);
+                this.logger.info(`Total Supply: ${totalSupply.toLocaleString()}`);
+                this.logger.info(`Market Cap: $${marketCap.toLocaleString()}`);
+                
+                // Trading links
+                this.logger.info("\n📊 Trading Links:");
+                this.logger.info("👽 GMGN: https://gmgn.ai/sol/token/" + txDetails.mint);
+                this.logger.info("😈 BullX: https://neo.bullx.io/terminal?chainId=1399811149&address=" + txDetails.mint);
+                this.logger.info("🦊 Raydium: https://raydium.io/swap/?inputCurrency=sol&outputCurrency=" + txDetails.mint);
+                this.logger.info("🌟 Solscan: https://solscan.io/token/" + txDetails.mint);
+                this.logger.info("🔍 Birdeye: https://birdeye.so/token/" + txDetails.mint + "?chain=solana\n");
+            } else {
+                this.logger.error(`Could not fetch price for token ${txDetails.mint}`);
             }
         } catch (error) {
             this.logger.error('Error handling new token from websocket:', error);
@@ -197,29 +257,39 @@ export class TokenMonitorService {
         
         // Get all active tokens
         const activeTokens = await this.dbService.getActiveTokens();
+        this.logger.info(`Found ${activeTokens.length} active tokens`);
         
         // Sell all tokens except the correct one
         for (const token of activeTokens) {
             if (token.tokenAddress !== tokenAddress) {
                 try {
+                    this.logger.info(`Attempting to sell incorrect token ${token.tokenAddress}`);
                     // Sell incorrect token using WSOL mint
                     await createSwapTransaction(token.tokenAddress, config.liquidity_pool.wsol_pc_mint);
-                    this.logger.info(`Sold incorrect token ${token.tokenAddress}`);
+                    this.logger.info(`Successfully sold incorrect token ${token.tokenAddress}`);
                     await this.dbService.updateTokenStatus(token.tokenAddress, 'inactive');
                 } catch (error) {
                     this.logger.error(`Error selling token ${token.tokenAddress}:`, error);
                 }
+            } else {
+                this.logger.info(`Keeping correct token ${token.tokenAddress}`);
             }
         }
 
         // If we haven't bought the correct token yet, buy it
         const correctToken = await this.dbService.getToken(tokenAddress);
         if (!correctToken) {
+            this.logger.info(`Correct token ${tokenAddress} not yet bought, initiating purchase...`);
             const currentPrice = await this.getCurrentPrice(tokenAddress);
             if (currentPrice !== null) {
+                this.logger.info(`Adding token ${tokenAddress} to monitor at price ${currentPrice}`);
                 await this.addToken(tokenAddress, currentPrice);
                 await this.buyToken(tokenAddress);
+            } else {
+                this.logger.warn(`Could not get current price for token ${tokenAddress}, skipping purchase`);
             }
+        } else {
+            this.logger.info(`Correct token ${tokenAddress} already being monitored`);
         }
     }
 }

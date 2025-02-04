@@ -10,13 +10,19 @@ export interface TokenTrack {
     price: number;
     lastCheck: number;
     status: 'active' | 'inactive';
+    name?: string;
+    totalSupply?: number;
+    marketCap?: number;
 }
 
 export class DatabaseService {
     private db: any;
     private static instance: DatabaseService;
+    private logger: Logger;
 
-    private constructor() {}
+    private constructor() {
+        this.logger = new Logger('DatabaseService');
+    }
 
     static getInstance(): DatabaseService {
         if (!DatabaseService.instance) {
@@ -27,15 +33,16 @@ export class DatabaseService {
 
     async initialize(): Promise<void> {
         try {
+            this.logger.info('Initializing database...');
             this.db = await open({
                 filename: 'tokens.db',
                 driver: sqlite3.Database
             });
 
             await this.createTables();
-            logger.info('Database initialized successfully');
+            this.logger.info('Database initialized successfully');
         } catch (error) {
-            logger.error('Failed to initialize database:', error);
+            this.logger.error('Failed to initialize database:', error);
             throw error;
         }
     }
@@ -47,7 +54,10 @@ export class DatabaseService {
                 timestamp INTEGER NOT NULL,
                 price REAL NOT NULL,
                 lastCheck INTEGER NOT NULL,
-                status TEXT NOT NULL CHECK(status IN ('active', 'inactive'))
+                status TEXT NOT NULL CHECK(status IN ('active', 'inactive')),
+                name TEXT,
+                totalSupply REAL,
+                marketCap REAL
             );
 
             CREATE INDEX IF NOT EXISTS idx_tokens_status ON tokens(status);
@@ -58,12 +68,13 @@ export class DatabaseService {
     async addToken(token: TokenTrack): Promise<void> {
         try {
             await this.db.run(
-                `INSERT OR REPLACE INTO tokens (tokenAddress, timestamp, price, lastCheck, status)
-                 VALUES (?, ?, ?, ?, ?)`,
-                [token.tokenAddress, token.timestamp, token.price, token.lastCheck, token.status]
+                `INSERT OR REPLACE INTO tokens (tokenAddress, timestamp, price, lastCheck, status, name, totalSupply, marketCap)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [token.tokenAddress, token.timestamp, token.price, token.lastCheck, token.status, 
+                 token.name || null, token.totalSupply || null, token.marketCap || null]
             );
         } catch (error) {
-            logger.error(`Failed to add token ${token.tokenAddress}:`, error);
+            this.logger.error(`Failed to add token ${token.tokenAddress}:`, error);
             throw error;
         }
     }
