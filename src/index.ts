@@ -154,7 +154,7 @@ async function websocketHandler(): Promise<void> {
 
   // Send subscription to the websocket once the connection is open
   ws.on("open", () => {
-    logger.info("\n🔓 WebSocket is open and listening.");
+    logger.info("🔓 WebSocket is open and listening.");
     if (ws) {
         // Send subscription request
         const request: WebSocketRequest = {
